@@ -28,8 +28,7 @@ import java.util.regex.Pattern;
  * Example code taken from the Apache Xalan project for demonstration purposes only
  */
 public class VersionFromResourceFile {
-  private static final String POM_PROPERTIES_JAR = "org/example/version.properties";
-  private static final String POM_PROPERTIES_FILE_SYSTEM = "target/classes/" + POM_PROPERTIES_JAR;
+  private static final String POM_PROPERTIES_PATH = "org/example/version.properties";
   private static final String VERSION_NUMBER_PATTERN = "^(\\d+)[.](\\d+)[.](D)?(\\d+)(-SNAPSHOT)?$";
   private static final String NO_VERSION = "0.0.0";
 
@@ -48,15 +47,10 @@ public class VersionFromResourceFile {
 
   private static void readProperties() {
     Properties pomProperties = new Properties();
-    try (InputStream fromJar = VersionFromResourceFile.class.getClassLoader().getResourceAsStream(POM_PROPERTIES_JAR)) {
-      if (fromJar != null) {
-        pomProperties.load(fromJar);
+    try (InputStream fromResource = VersionFromResourceFile.class.getClassLoader().getResourceAsStream(POM_PROPERTIES_PATH)) {
+      if (fromResource != null) {
+        pomProperties.load(fromResource);
         version = pomProperties.getProperty("version", NO_VERSION);
-      } else {
-        try (FileInputStream fromFileSystem = new FileInputStream(POM_PROPERTIES_FILE_SYSTEM)) {
-          pomProperties.load(fromFileSystem);
-          version = pomProperties.getProperty("version", NO_VERSION);
-        }
       }
     } catch (IOException e) {
       new RuntimeException("Cannot read properties file to extract version number information: ", e)
