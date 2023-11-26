@@ -17,7 +17,6 @@
  */
 package org.example;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -28,7 +27,6 @@ import java.util.regex.Pattern;
  * Example code taken from the Apache Xalan project for demonstration purposes only
  */
 public class VersionFromResourceFile {
-  private static final String POM_PROPERTIES_PATH = "org/example/version.properties";
   private static final String VERSION_NUMBER_PATTERN = "^(\\d+)[.](\\d+)[.](D)?(\\d+)(-SNAPSHOT)?$";
   private static final String NO_VERSION = "0.0.0";
 
@@ -47,7 +45,17 @@ public class VersionFromResourceFile {
 
   private static void readProperties() {
     Properties pomProperties = new Properties();
-    try (InputStream fromResource = VersionFromResourceFile.class.getClassLoader().getResourceAsStream(POM_PROPERTIES_PATH)) {
+    // IMPLEMENTATION NOTE: Class.getResourceAsStream uses a *relative* path by
+    // default, in contrast to Classloader.getResourceAsStream, which uses an
+    // *absolute* one. This is not clearly documented in the JDK, only
+    // noticeable by the absence of the word "absolute" in
+    // Class.getResourceAsStream javadocs. For more details, see
+    // https://www.baeldung.com/java-class-vs-classloader-getresource.
+    //
+    // Because we expect the properties file to be in the same directory/package
+    // as this class, the relative path comes in handy and as a bonus is also
+    // relocation-friendly (think Maven Shade).
+    try (InputStream fromResource = VersionFromResourceFile.class.getResourceAsStream("version.properties")) {
       if (fromResource != null) {
         pomProperties.load(fromResource);
         version = pomProperties.getProperty("version", NO_VERSION);
